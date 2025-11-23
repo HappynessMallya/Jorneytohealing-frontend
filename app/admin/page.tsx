@@ -398,7 +398,7 @@ export default function AdminPage() {
         });
       };
     }
-  }, [activeTab, isCometChatLoggedIn]);
+  }, [activeTab, isCometChatLoggedIn, selectedChatUser]);
 
   // Mark messages as read when user is selected AND enable read receipts
   useEffect(() => {

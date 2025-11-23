@@ -6,6 +6,10 @@ import { useCometChat } from '@/app/context/CometChatContext';
 import { useAuthStore } from '@/stores/authStore';
 import { CometChat } from '@cometchat/chat-sdk-javascript';
 
+// Force client-side rendering only
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge'; // Use edge runtime to skip SSR
+
 export default function CustomerChatPage() {
   const { isLoggedIn: isCometChatLoggedIn, isInitialized } = useCometChat();
   const { isLoggedIn: isAppLoggedIn, user } = useAuthStore();

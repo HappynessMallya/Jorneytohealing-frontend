@@ -44,8 +44,8 @@ export default function QuestionnairePage() {
             sessionPreference: existingQuestionnaire.sessionPreference || "",
             preferredDaysTimes: existingQuestionnaire.preferredDaysTimes || "",
             comfortLevelSharing: existingQuestionnaire.comfortLevelSharing ?? 0,
-            preferredMethods: existingQuestionnaire.preferredMethods || null,
-            additionalInfo: existingQuestionnaire.additionalInfo || null,
+            preferredMethods: existingQuestionnaire.preferredMethods || "",
+            additionalInfo: existingQuestionnaire.additionalInfo || "",
           });
         }
       } catch (error: any) {

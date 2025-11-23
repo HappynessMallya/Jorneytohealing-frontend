@@ -804,7 +804,7 @@ export default function DashboardPage() {
               ) : !questionnaire ? (
                 <div className="text-center py-12">
                   <p className="text-text/70 mb-6">
-                    You haven't submitted a questionnaire yet. Complete it to help us match you with the best therapist.
+                    You haven&apos;t submitted a questionnaire yet. Complete it to help us match you with the best therapist.
                   </p>
                   <Button onClick={() => router.push("/questionnaire")}>
                     Complete Questionnaire

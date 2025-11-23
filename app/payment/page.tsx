@@ -696,8 +696,8 @@ function PaymentForm() {
 
             <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 mb-4">
               <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> A payment record has been created with status "pending". 
-                Once the payment aggregator confirms the payment, the status will be updated to "completed".
+                <strong>Note:</strong> A payment record has been created with status &quot;pending&quot;. 
+                Once the payment aggregator confirms the payment, the status will be updated to &quot;completed&quot;.
               </p>
             </div>
           </div>

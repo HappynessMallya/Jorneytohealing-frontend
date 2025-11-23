@@ -213,6 +213,7 @@ export default function BookingPage() {
       {/* Login Modal */}
       {showLoginModal && (
         <LoginModal
+          isOpen={showLoginModal}
           onClose={() => setShowLoginModal(false)}
           onSuccess={() => {
             setShowLoginModal(false);
