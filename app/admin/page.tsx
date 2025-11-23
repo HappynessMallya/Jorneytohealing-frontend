@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
+
+// Force dynamic rendering for CometChat
+export const dynamic = 'force-dynamic';
 import { usePostsStore } from "@/stores/postsStore";
 import { useCometChat } from "@/app/context/CometChatContext";
 import { postsApi, adminApi } from "@/lib/api-client";

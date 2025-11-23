@@ -4,6 +4,8 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
   },
+  // Disable prerendering for pages with dynamic content
+  output: 'standalone',
 };
 
 module.exports = nextConfig;

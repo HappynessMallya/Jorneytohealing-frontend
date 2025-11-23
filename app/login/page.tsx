@@ -3,6 +3,9 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 import { authApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
