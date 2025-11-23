@@ -42,10 +42,14 @@ export default function DashboardPage() {
         bookingsApi.getMyBookings(),
         paymentsApi.getMyPayments(),
       ]);
-      setBookings(bookingsData);
-      setPayments(paymentsData);
+      // Ensure data is always an array
+      setBookings(Array.isArray(bookingsData) ? bookingsData : []);
+      setPayments(Array.isArray(paymentsData) ? paymentsData : []);
     } catch (error) {
       console.error("Error fetching data:", error);
+      // Reset to empty arrays on error
+      setBookings([]);
+      setPayments([]);
     } finally {
       setLoading(false);
     }

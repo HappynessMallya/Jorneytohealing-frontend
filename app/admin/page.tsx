@@ -86,7 +86,8 @@ export default function AdminPage() {
   const fetchClients = async () => {
     try {
       const clients = await adminApi.getClients();
-      setClients(clients);
+      // Ensure clients is always an array
+      setClients(Array.isArray(clients) ? clients : []);
     } catch (error) {
       console.error("Error fetching clients:", error);
       // Keep empty array if API fails
@@ -98,12 +99,18 @@ export default function AdminPage() {
     try {
       // GET /posts - gets all posts (both published and unpublished)
       const posts = await postsApi.getAll();
-      setPosts(posts);
+      // Ensure posts is always an array
+      const postsArray = Array.isArray(posts) ? posts : [];
+      setPosts(postsArray);
       // Update Zustand store
       const { setPosts: setPostsInStore } = usePostsStore.getState();
-      setPostsInStore(posts);
+      setPostsInStore(postsArray);
     } catch (error) {
       console.error("Error fetching posts:", error);
+      // Reset to empty array on error
+      setPosts([]);
+      const { setPosts: setPostsInStore } = usePostsStore.getState();
+      setPostsInStore([]);
     }
   };
 
@@ -111,12 +118,16 @@ export default function AdminPage() {
     try {
       // GET /posts?published=true - gets only published posts
       const publishedPosts = await postsApi.getAll(true);
-      setPublishedPostsCount(publishedPosts.length);
+      // Ensure publishedPosts is always an array
+      const postsArray = Array.isArray(publishedPosts) ? publishedPosts : [];
+      setPublishedPostsCount(postsArray.length);
     } catch (error) {
       console.error("Error fetching published posts count:", error);
       // Fallback to counting from all posts if available
-      if (posts.length > 0) {
+      if (Array.isArray(posts) && posts.length > 0) {
         setPublishedPostsCount(posts.filter(p => p.published).length);
+      } else {
+        setPublishedPostsCount(0);
       }
     }
   };
@@ -125,7 +136,8 @@ export default function AdminPage() {
     setBookingsLoading(true);
     try {
       const bookings = await adminApi.getAllBookings();
-      setBookings(bookings);
+      // Ensure bookings is always an array
+      setBookings(Array.isArray(bookings) ? bookings : []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
       // Keep empty array if API fails
@@ -139,7 +151,8 @@ export default function AdminPage() {
     setUpcomingBookingsLoading(true);
     try {
       const upcoming = await adminApi.getUpcomingBookings();
-      setUpcomingBookings(upcoming);
+      // Ensure upcoming is always an array
+      setUpcomingBookings(Array.isArray(upcoming) ? upcoming : []);
     } catch (error) {
       console.error("Error fetching upcoming bookings:", error);
       setUpcomingBookings([]);
@@ -169,7 +182,8 @@ export default function AdminPage() {
   const fetchPayments = async () => {
     try {
       const payments = await adminApi.getAllPayments();
-      setPayments(payments);
+      // Ensure payments is always an array
+      setPayments(Array.isArray(payments) ? payments : []);
     } catch (error) {
       console.error("Error fetching payments:", error);
       // Keep empty array if API fails
@@ -180,7 +194,8 @@ export default function AdminPage() {
   const fetchQuestionnaires = async () => {
     try {
       const questionnaires = await adminApi.getAllQuestionnaires();
-      setQuestionnaires(questionnaires);
+      // Ensure questionnaires is always an array
+      setQuestionnaires(Array.isArray(questionnaires) ? questionnaires : []);
     } catch (error) {
       console.error("Error fetching questionnaires:", error);
       setQuestionnaires([]);
