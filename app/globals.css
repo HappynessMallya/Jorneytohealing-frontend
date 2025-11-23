@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --border: 214.3 31.8% 91.4%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    @apply bg-secondary text-text;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .wave-shape {
+    position: absolute;
+    width: 100%;
+    height: 100px;
+    overflow: hidden;
+    z-index: 0;
+  }
+  
+  .wave-shape::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(168, 213, 186, 0.3), transparent);
+    animation: wave 15s linear infinite;
+  }
+  
+  @keyframes wave {
+    0% {
+      transform: translateX(-50%);
+    }
+    100% {
+      transform: translateX(0%);
+    }
+  }
+  
+  .organic-blob {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    filter: blur(40px);
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  
+  /* Ensure CometChat doesn't block content */
+  .cometchat-root {
+    position: relative;
+    z-index: 10;
+  }
+  
+  /* Prevent any CometChat overlays from blocking questionnaire */
+  .questionnaire-page {
+    position: relative;
+    z-index: 20;
+  }
+  
+  /* Hide CometChat backdrops when not actively used */
+  .cometchat-alert-popup__backdrop:not(:has(.cometchat-alert-popup-wrapper)),
+  .cometchat-alert-popup__backdrop:empty {
+    display: none !important;
+  }
+  
+  /* Hide all CometChat backdrops that are not part of an active dialog */
+  .cometchat-leave-group__backdrop:empty,
+  .cometchat-transfer-ownership-dialog__backdrop:empty,
+  .cometchat-delete-group__backdrop:empty,
+  .cometchat-transfer-ownership__backdrop:empty,
+  .cometchat-block-user-dialog__backdrop:empty,
+  .cometchat-delete-chat-dialog__backdrop:empty,
+  .cometchat-create-group__backdrop:empty {
+    display: none !important;
+  }
+  
+  /* Ensure CometChat backdrops only show when they have content */
+  .cometchat-alert-popup__backdrop:not(:has(*)) {
+    display: none !important;
+  }
+  
+  /* Hide any fixed/absolute overlays from CometChat that might be lingering */
+  body > .cometchat-alert-popup__backdrop,
+  body > .cometchat-create-group__backdrop {
+    display: none !important;
+  }
+}
+
