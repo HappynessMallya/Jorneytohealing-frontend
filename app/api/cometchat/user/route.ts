@@ -93,11 +93,11 @@ export async function POST(req: NextRequest) {
           const errorData = await updateResponse.json();
           console.error(`❌ Failed to update metadata for ${sanitizedUid}`);
           console.error(`❌ Error response:`, JSON.stringify(errorData, null, 2));
-          return NextResponse.json({
+        return NextResponse.json({
             message: "User already exists but metadata update failed",
-            data: { uid: sanitizedUid, name, avatar },
+          data: { uid: sanitizedUid, name, avatar },
             error: errorData
-          });
+        });
         }
       }
       

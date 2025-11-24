@@ -243,21 +243,36 @@ export default function QuestionnairePage() {
                 </select>
               </div>
               <div>
-                <Label htmlFor="genderIdentity">What&apos;s your gender identity?</Label>
-                <Input
+                <Label htmlFor="genderIdentity" className="text-text font-medium mb-2 block">
+                  What&apos;s your gender identity?
+                </Label>
+                <select
                   id="genderIdentity"
                   value={answers.genderIdentity || ""}
                   onChange={(e) => setAnswer("genderIdentity", e.target.value)}
-                  placeholder="e.g., Female, Male, Non-binary, Prefer not to say"
-                />
+                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:border-primary transition-colors"
+                >
+                  <option value="">Select gender identity</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Non-binary">Non-binary</option>
+                  <option value="Genderqueer">Genderqueer</option>
+                  <option value="Genderfluid">Genderfluid</option>
+                  <option value="Agender">Agender</option>
+                  <option value="Two-Spirit">Two-Spirit</option>
+                  <option value="Other">Other</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
               </div>
               <div>
-                <Label htmlFor="relationshipStatus">What&apos;s your relationship status?</Label>
+                <Label htmlFor="relationshipStatus" className="text-text font-medium mb-2 block">
+                  What&apos;s your relationship status?
+                </Label>
                 <select
                   id="relationshipStatus"
                   value={answers.relationshipStatus || ""}
                   onChange={(e) => setAnswer("relationshipStatus", e.target.value)}
-                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:border-primary transition-colors"
                 >
                   <option value="">Select status</option>
                   <option value="Single">Single</option>
@@ -269,13 +284,26 @@ export default function QuestionnairePage() {
                 </select>
               </div>
               <div>
-                <Label htmlFor="workOrStudy">Do you currently work or study?</Label>
-                <Input
+                <Label htmlFor="workOrStudy" className="text-text font-medium mb-2 block">
+                  Do you currently work or study?
+                </Label>
+                <select
                   id="workOrStudy"
                   value={answers.workOrStudy || ""}
                   onChange={(e) => setAnswer("workOrStudy", e.target.value)}
-                  placeholder="e.g., Full-time employee, Student, Retired"
-                />
+                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:border-primary transition-colors"
+                >
+                  <option value="">Select status</option>
+                  <option value="Full-time employee">Full-time employee</option>
+                  <option value="Part-time employee">Part-time employee</option>
+                  <option value="Self-employed">Self-employed</option>
+                  <option value="Full-time student">Full-time student</option>
+                  <option value="Part-time student">Part-time student</option>
+                  <option value="Unemployed">Unemployed</option>
+                  <option value="Retired">Retired</option>
+                  <option value="Homemaker">Homemaker</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
             </div>
           )}
@@ -284,8 +312,10 @@ export default function QuestionnairePage() {
           {currentStep === 2 && (
             <div className="space-y-6">
               <div>
-                <Label>What brings you to therapy? (select all that apply)</Label>
-                <div className="mt-2 space-y-2">
+                <Label className="text-text font-medium mb-3 block">
+                  What brings you to therapy? (select all that apply)
+                </Label>
+                <div className="mt-2 space-y-3">
                   {[
                     "Stress",
                     "Anxiety",
@@ -295,7 +325,7 @@ export default function QuestionnairePage() {
                     "Self-esteem",
                     "Other",
                   ].map((reason) => (
-                    <label key={reason} className="flex items-center space-x-2 cursor-pointer">
+                    <label key={reason} className="flex items-center space-x-3 cursor-pointer group">
                       <input
                         type="checkbox"
                         checked={answers.therapyReasons?.includes(reason) || false}
@@ -310,20 +340,22 @@ export default function QuestionnairePage() {
                             );
                           }
                         }}
-                        className="w-5 h-5 text-primary focus:ring-primary rounded"
+                        className="w-5 h-5 text-primary focus:ring-primary border-2 border-secondary rounded transition-colors"
                       />
-                      <span className="text-text">{reason}</span>
+                      <span className="text-text group-hover:text-primary transition-colors">{reason}</span>
                     </label>
                   ))}
                 </div>
               </div>
               <div>
-                <Label htmlFor="issueDuration">How long have you been experiencing this issue?</Label>
+                <Label htmlFor="issueDuration" className="text-text font-medium mb-2 block">
+                  How long have you been experiencing this issue?
+                </Label>
                 <select
                   id="issueDuration"
                   value={answers.issueDuration || ""}
                   onChange={(e) => setAnswer("issueDuration", e.target.value)}
-                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:border-primary transition-colors"
                 >
                   <option value="">Select duration</option>
                   <option value="Less than a month">Less than a month</option>
@@ -334,14 +366,16 @@ export default function QuestionnairePage() {
                 </select>
               </div>
               <div>
-                <Label htmlFor="attendedTherapyBefore">Have you attended therapy before?</Label>
+                <Label htmlFor="attendedTherapyBefore" className="text-text font-medium mb-2 block">
+                  Have you attended therapy before?
+                </Label>
                 <select
                   id="attendedTherapyBefore"
                   value={answers.attendedTherapyBefore?.toString() || ""}
                   onChange={(e) =>
                     setAnswer("attendedTherapyBefore", e.target.value === "true")
                   }
-                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:border-primary transition-colors"
                 >
                   <option value="">Select</option>
                   <option value="true">Yes</option>
@@ -349,25 +383,31 @@ export default function QuestionnairePage() {
                 </select>
               </div>
               <div>
-                <Label htmlFor="therapyGoals">What are your goals for therapy?</Label>
+                <Label htmlFor="therapyGoals" className="text-text font-medium mb-2 block">
+                  What are your goals for therapy?
+                </Label>
                 <Textarea
                   id="therapyGoals"
                   value={answers.therapyGoals || ""}
                   onChange={(e) => setAnswer("therapyGoals", e.target.value)}
                   placeholder="Share what you hope to achieve..."
+                  className="min-h-[100px] rounded-xl border-2 border-secondary focus:border-primary transition-colors"
                 />
               </div>
               <div>
-                <Label htmlFor="sessionPreference">Would you prefer in-person or online sessions?</Label>
+                <Label htmlFor="sessionPreference" className="text-text font-medium mb-2 block">
+                  Would you prefer in-person or online sessions?
+                </Label>
                 <select
                   id="sessionPreference"
                   value={answers.sessionPreference || ""}
                   onChange={(e) => setAnswer("sessionPreference", e.target.value)}
-                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:border-primary transition-colors"
                 >
                   <option value="">Select preference</option>
                   <option value="in-person">In-person</option>
                   <option value="online">Online</option>
+                  <option value="either">Either - I'm flexible</option>
                 </select>
               </div>
             </div>
@@ -377,58 +417,90 @@ export default function QuestionnairePage() {
           {currentStep === 3 && (
             <div className="space-y-6">
               <div>
-                <Label htmlFor="preferredDaysTimes">Which days and times generally work best for you?</Label>
-                <Textarea
+                <Label htmlFor="preferredDaysTimes" className="text-text font-medium mb-2 block">
+                  Which days and times generally work best for you?
+                </Label>
+                <select
                   id="preferredDaysTimes"
                   value={answers.preferredDaysTimes || ""}
                   onChange={(e) => setAnswer("preferredDaysTimes", e.target.value)}
-                  placeholder="e.g., Weekday mornings, Tuesday evenings, etc."
-                />
+                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:border-primary transition-colors"
+                >
+                  <option value="">Select preferred time</option>
+                  <option value="Weekday mornings (9am-12pm)">Weekday mornings (9am-12pm)</option>
+                  <option value="Weekday afternoons (12pm-5pm)">Weekday afternoons (12pm-5pm)</option>
+                  <option value="Weekday evenings (5pm-9pm)">Weekday evenings (5pm-9pm)</option>
+                  <option value="Weekend mornings (9am-12pm)">Weekend mornings (9am-12pm)</option>
+                  <option value="Weekend afternoons (12pm-5pm)">Weekend afternoons (12pm-5pm)</option>
+                  <option value="Weekend evenings (5pm-9pm)">Weekend evenings (5pm-9pm)</option>
+                  <option value="Flexible">Flexible - any time works</option>
+                </select>
               </div>
               <div>
-                <Label htmlFor="preferredMethods">Preferred therapy method (optional)</Label>
-                <Input
+                <Label htmlFor="preferredMethods" className="text-text font-medium mb-2 block">
+                  Preferred therapy method (optional)
+                </Label>
+                <select
                   id="preferredMethods"
                   value={answers.preferredMethods || ""}
                   onChange={(e) => setAnswer("preferredMethods", e.target.value)}
-                  placeholder="e.g., CBT, Mindfulness, Talk therapy"
-                />
+                  className="flex h-12 w-full rounded-xl border-2 border-secondary bg-white px-4 py-2 text-text focus:outline-none focus:border-primary transition-colors"
+                >
+                  <option value="">Select therapy method</option>
+                  <option value="Cognitive Behavioral Therapy (CBT)">Cognitive Behavioral Therapy (CBT)</option>
+                  <option value="Psychodynamic Therapy">Psychodynamic Therapy</option>
+                  <option value="Humanistic Therapy">Humanistic Therapy</option>
+                  <option value="Dialectical Behavior Therapy (DBT)">Dialectical Behavior Therapy (DBT)</option>
+                  <option value="Mindfulness-Based Therapy">Mindfulness-Based Therapy</option>
+                  <option value="Solution-Focused Therapy">Solution-Focused Therapy</option>
+                  <option value="Acceptance and Commitment Therapy (ACT)">Acceptance and Commitment Therapy (ACT)</option>
+                  <option value="EMDR Therapy">EMDR Therapy</option>
+                  <option value="Talk Therapy">Talk Therapy</option>
+                  <option value="No preference">No preference</option>
+                </select>
               </div>
               <div>
-                <Label htmlFor="comfortLevelSharing">
-                  How comfortable are you sharing personal information? (1-5)
+                <Label htmlFor="comfortLevelSharing" className="text-text font-medium mb-3 block">
+                  How comfortable are you sharing personal information?
                 </Label>
-                <div className="flex items-center space-x-4 mt-2">
+                <div className="flex items-center justify-between mt-4">
                   {[1, 2, 3, 4, 5].map((num) => (
                     <button
                       key={num}
                       type="button"
                       onClick={() => setAnswer("comfortLevelSharing", num)}
-                      className={`w-12 h-12 rounded-full border-2 transition-all duration-300 ${
+                      className={`w-14 h-14 md:w-16 md:h-16 rounded-full border-2 transition-all duration-300 font-semibold text-lg ${
                         answers.comfortLevelSharing === num
-                          ? "bg-primary text-white border-primary"
-                          : "border-secondary text-text hover:border-primary"
+                          ? "bg-primary text-white border-primary shadow-md scale-110"
+                          : "border-secondary text-text hover:border-primary hover:scale-105"
                       }`}
                     >
                       {num}
                     </button>
                   ))}
                 </div>
+                <div className="flex justify-between mt-3 text-xs text-text-light px-1">
+                  <span>Not comfortable</span>
+                  <span>Very comfortable</span>
+                </div>
               </div>
               <div>
-                <Label htmlFor="additionalInfo">Is there anything else you&apos;d like the therapist to know?</Label>
+                <Label htmlFor="additionalInfo" className="text-text font-medium mb-2 block">
+                  Is there anything else you&apos;d like the therapist to know?
+                </Label>
                 <Textarea
                   id="additionalInfo"
                   value={answers.additionalInfo || ""}
                   onChange={(e) => setAnswer("additionalInfo", e.target.value)}
                   placeholder="Optional additional information..."
+                  className="min-h-[100px] rounded-xl border-2 border-secondary focus:border-primary transition-colors"
                 />
               </div>
             </div>
           )}
 
           {/* Info Box */}
-          <div className="bg-primary-lighter rounded-2xl p-5 mb-8 flex items-start gap-4">
+          <div className="bg-primary-lighter rounded-2xl p-5 mb-8 mt-8 flex items-start gap-4">
             <div className="w-6 h-6 rounded-full border-2 border-primary flex items-center justify-center flex-shrink-0 mt-0.5">
               <span className="text-primary text-sm font-bold">i</span>
             </div>

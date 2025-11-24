@@ -126,7 +126,7 @@ export default function Home() {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-4xl md:text-5xl font-bold text-text mb-6 leading-tight">
+                <h2 className="text-3xl md:text-4xl font-bold text-text mb-6 leading-tight">
                   Join over <span className="text-primary">6,000,000</span> people worldwide who decided to{" "}
                   <span className="text-primary">get help</span> and{" "}
                   <span className="text-primary">get happy</span> with Journey to Healing
