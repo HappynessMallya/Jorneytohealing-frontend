@@ -407,7 +407,7 @@ export default function QuestionnairePage() {
                   <option value="">Select preference</option>
                   <option value="in-person">In-person</option>
                   <option value="online">Online</option>
-                  <option value="either">Either - I'm flexible</option>
+                  <option value="either">Either - I&apos;m flexible</option>
                 </select>
               </div>
             </div>
