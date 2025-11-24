@@ -1022,22 +1022,8 @@ export default function AdminPage() {
           {activeTab === "chat" && (
             <div>
               <div className="mb-4 md:mb-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-text mb-2">💬 Chat with Patients</h2>
-                    <p className="text-text/70 text-sm md:text-base">Connect with patients who have contacted you</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      console.log('[ADMIN] 🔄 Manual refresh triggered');
-                      setForceRefreshKey(prev => prev + 1);
-                    }}
-                    disabled={loadingChatUsers}
-                    className="px-3 md:px-4 py-2 bg-primary text-white rounded-lg text-xs md:text-sm hover:bg-primary-hover disabled:opacity-50"
-                  >
-                    {loadingChatUsers ? '⏳ Loading...' : '🔄 Refresh'}
-                  </button>
-                </div>
+                <h2 className="text-xl md:text-2xl font-bold text-text mb-2">💬 Chat with Patients</h2>
+                <p className="text-text/70 text-sm md:text-base">Connect with patients who have contacted you</p>
               </div>
               
               <div className="h-[500px] md:h-[600px] bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col md:flex-row">
