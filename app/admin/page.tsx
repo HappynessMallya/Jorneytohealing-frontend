@@ -36,6 +36,7 @@ export default function AdminPage() {
   const [chatUsers, setChatUsers] = useState<any[]>([]);
   const [loadingChatUsers, setLoadingChatUsers] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState<{ [key: string]: number }>({});
+  const [showMobileUserList, setShowMobileUserList] = useState(true);
   const [CometChatComponents, setCometChatComponents] = useState<{
     MessageList: React.ComponentType<any> | null;
     MessageComposer: React.ComponentType<any> | null;
@@ -276,11 +277,21 @@ export default function AdminPage() {
             .setLimit(30)
             .build();
           const usersList = await usersRequest.fetchNext();
+          
+          // Debug: Log all users with their metadata
+          console.log('[ADMIN] Total CometChat users fetched:', usersList.length);
+          usersList.forEach((u: any) => {
+            const metadata = u.getMetadata();
+            console.log(`[ADMIN] User: ${u.getName()} (${u.getUid()}) - Role: ${metadata?.role || 'NO METADATA'}`);
+          });
+          
           // Filter to show ONLY regular users (patients) - admin should only see non-admin users
           const filteredUsers = usersList.filter((u: any) => {
             const metadata = u.getMetadata();
             const userRole = metadata?.role || 'user';
-            return u.getUid() !== user?.id && userRole !== 'admin';
+            const shouldShow = u.getUid() !== user?.id && userRole !== 'admin';
+            console.log(`[ADMIN] ${u.getName()}: role=${userRole}, shouldShow=${shouldShow}`);
+            return shouldShow;
           });
           console.log('[ADMIN] Filtered patients (non-admin users):', filteredUsers.length);
           setChatUsers(filteredUsers);
@@ -483,32 +494,33 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-secondary to-accent">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="bg-white rounded-2xl shadow-soft p-8">
-          <h1 className="text-4xl font-bold text-text mb-8">Admin Portal</h1>
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-7xl">
+        <div className="bg-white rounded-2xl shadow-soft p-4 md:p-8">
+          <h1 className="text-2xl md:text-4xl font-bold text-text mb-4 md:mb-8">Admin Portal</h1>
 
           {/* Tabs */}
-          <div className="flex flex-wrap gap-4 mb-8 border-b border-secondary pb-4">
+          <div className="flex flex-wrap gap-2 md:gap-4 mb-6 md:mb-8 border-b border-secondary pb-4">
             {[
-              { id: "dashboard", label: "Dashboard" },
-              { id: "chat", label: "Chat with Patients" },
-              { id: "bookings", label: "Bookings" },
-              { id: "sessions", label: "Sessions" },
-              { id: "payments", label: "Payments" },
-              { id: "questionnaires", label: "Questionnaires" },
-              { id: "clients", label: "Users" },
-              { id: "posts", label: "Posts" },
+              { id: "dashboard", label: "Dashboard", shortLabel: "📊" },
+              { id: "chat", label: "Chat with Patients", shortLabel: "💬" },
+              { id: "bookings", label: "Bookings", shortLabel: "📅" },
+              { id: "sessions", label: "Sessions", shortLabel: "🎯" },
+              { id: "payments", label: "Payments", shortLabel: "💳" },
+              { id: "questionnaires", label: "Questionnaires", shortLabel: "📋" },
+              { id: "clients", label: "Users", shortLabel: "👥" },
+              { id: "posts", label: "Posts", shortLabel: "📝" },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-2 rounded-xl font-semibold transition-all duration-300 ${
+                className={`px-3 md:px-6 py-2 rounded-xl font-semibold transition-all duration-300 text-xs md:text-base ${
                   activeTab === tab.id
                     ? "bg-primary text-white"
                     : "bg-secondary text-text hover:bg-secondary/80"
                 }`}
               >
-                {tab.label}
+                <span className="md:hidden">{tab.shortLabel}</span>
+                <span className="hidden md:inline">{tab.label}</span>
               </button>
             ))}
           </div>
@@ -981,12 +993,12 @@ export default function AdminPage() {
           {/* Chat Tab */}
           {activeTab === "chat" && (
             <div>
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-text mb-2">💬 Chat with Patients</h2>
-                <p className="text-text/70">Connect with patients who have contacted you</p>
+              <div className="mb-4 md:mb-6">
+                <h2 className="text-xl md:text-2xl font-bold text-text mb-2">💬 Chat with Patients</h2>
+                <p className="text-text/70 text-sm md:text-base">Connect with patients who have contacted you</p>
               </div>
               
-              <div className="h-[600px] bg-white rounded-2xl shadow-soft overflow-hidden flex">
+              <div className="h-[500px] md:h-[600px] bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col md:flex-row">
                 {!isInitialized || !isCometChatLoggedIn ? (
                   <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
@@ -998,10 +1010,20 @@ export default function AdminPage() {
                   </div>
                 ) : (
                   <>
-                    {/* Users List - Left Side */}
-                    <div className="w-80 border-r border-gray-200 flex flex-col bg-gray-50">
-                      <div className="p-3 bg-white border-b border-gray-200">
-                        <h3 className="font-semibold text-gray-800">👥 Patients & Users</h3>
+                    {/* Users List - Left Side (responsive) */}
+                    <div className={`${
+                      showMobileUserList || !selectedChatUser ? 'flex' : 'hidden'
+                    } md:flex w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-200 flex-col bg-gray-50`}>
+                      <div className="p-3 bg-white border-b border-gray-200 flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-800 text-sm md:text-base">👥 Patients & Users</h3>
+                        {selectedChatUser && (
+                          <button
+                            onClick={() => setShowMobileUserList(false)}
+                            className="md:hidden text-gray-600 hover:text-gray-900"
+                          >
+                            ✕
+                          </button>
+                        )}
                       </div>
                       <div className="flex-1 overflow-y-auto">
                         {loadingChatUsers ? (
@@ -1023,6 +1045,7 @@ export default function AdminPage() {
                                 onClick={() => {
                                   console.log('[ADMIN] ✅ Selected patient:', u.getName());
                                   setSelectedChatUser(u);
+                                  setShowMobileUserList(false); // Hide list on mobile when user is selected
                                 }}
                                 className={`w-full p-4 border-b border-gray-200 hover:bg-white transition-colors text-left relative ${
                                   selectedChatUser?.uid === u.uid 
@@ -1066,25 +1089,34 @@ export default function AdminPage() {
                     </div>
 
                     {/* Chat Window - Right Side */}
-                    <div className="flex-1 flex flex-col bg-white">
+                    <div className={`${
+                      showMobileUserList && selectedChatUser ? 'hidden' : 'flex'
+                    } md:flex flex-1 flex-col bg-white`}>
                       {!selectedChatUser ? (
                         <div className="flex-1 flex items-center justify-center bg-gray-50">
-                          <div className="text-center">
-                            <div className="text-6xl mb-4">💬</div>
-                            <h3 className="text-xl font-semibold text-gray-700 mb-2">Select a Patient</h3>
-                            <p className="text-gray-500">Choose someone from the list to start chatting</p>
+                          <div className="text-center px-4">
+                            <div className="text-4xl md:text-6xl mb-4">💬</div>
+                            <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-2">Select a Patient</h3>
+                            <p className="text-sm md:text-base text-gray-500">Choose someone from the list to start chatting</p>
                           </div>
                         </div>
                       ) : (
                         <div className="flex-1 flex flex-col">
                           {/* Chat Header */}
-                          <div className="p-4 border-b border-gray-200 bg-white">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
+                          <div className="p-3 md:p-4 border-b border-gray-200 bg-white">
+                            <div className="flex items-center gap-2 md:gap-3">
+                              {/* Back button for mobile */}
+                              <button
+                                onClick={() => setShowMobileUserList(true)}
+                                className="md:hidden text-gray-600 hover:text-gray-900 p-1"
+                              >
+                                ←
+                              </button>
+                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-sm md:text-base">
                                 {selectedChatUser.getName().charAt(0).toUpperCase()}
                               </div>
-                              <div>
-                                <div className="font-semibold text-gray-800">{selectedChatUser.getName()}</div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-gray-800 text-sm md:text-base truncate">{selectedChatUser.getName()}</div>
                                 <div className="text-xs text-gray-500">
                                   {selectedChatUser.getStatus() === 'online' ? '🟢 Online' : '⚪ Offline'}
                                 </div>

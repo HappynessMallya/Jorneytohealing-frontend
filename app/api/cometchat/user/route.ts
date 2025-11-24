@@ -51,14 +51,42 @@ export async function POST(req: NextRequest) {
     const data = await response.json();
 
     if (!response.ok) {
-      // If user already exists, that's okay - return success
+      // If user already exists, update their metadata with the role
       if (data?.error?.code === "ERR_UID_ALREADY_EXISTS") {
-        console.log(`✅ CometChat user already exists: ${sanitizedUid}`);
-        return NextResponse.json({
-          message: "User already exists",
-          user: { uid: sanitizedUid, name, avatar },
-          data: { uid: sanitizedUid, name, avatar },
-        });
+        console.log(`🔄 CometChat user already exists: ${sanitizedUid}, updating metadata...`);
+        
+        // Update user metadata via PATCH request
+        const updateResponse = await fetch(
+          `https://api-${region}.cometchat.io/v3/users/${sanitizedUid}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "appId": appId,
+              "apiKey": apiKey,
+            },
+            body: JSON.stringify({
+              metadata: {
+                role: role || 'user',
+              },
+            }),
+          }
+        );
+
+        if (updateResponse.ok) {
+          const updatedData = await updateResponse.json();
+          console.log(`✅ CometChat user metadata updated successfully: ${sanitizedUid} with role: ${role || 'user'}`);
+          return NextResponse.json({ 
+            message: "User exists and metadata updated",
+            data: updatedData.data || { uid: sanitizedUid, name, avatar, metadata: { role: role || 'user' } },
+          });
+        } else {
+          console.warn(`⚠️ Failed to update metadata for ${sanitizedUid}, but user exists`);
+          return NextResponse.json({
+            message: "User already exists",
+            data: { uid: sanitizedUid, name, avatar },
+          });
+        }
       }
       
       console.error("CometChat user creation error:", data);
@@ -71,7 +99,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log(`✅ CometChat user created successfully: ${sanitizedUid}`);
+    console.log(`✅ CometChat user created successfully: ${sanitizedUid} with role: ${role || 'user'}`);
     return NextResponse.json({ ...data, data: { ...data.data, uid: sanitizedUid } });
   } catch (error: any) {
     console.error("CometChat user creation error:", error);
