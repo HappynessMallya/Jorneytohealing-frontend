@@ -28,6 +28,7 @@ export default function DashboardPage() {
   const [loadingChatUsers, setLoadingChatUsers] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState<{ [key: string]: number }>({});
   const [showMobileUserList, setShowMobileUserList] = useState(true);
+  const [forceRefreshKey, setForceRefreshKey] = useState(0);
   const [CometChatComponents, setCometChatComponents] = useState<{
     MessageList: React.ComponentType<any> | null;
     MessageComposer: React.ComponentType<any> | null;
@@ -99,6 +100,7 @@ export default function DashboardPage() {
       if (isLoggedIn && user && isInitialized && !isCometChatLoggedIn) {
         try {
           console.log('🚀 Starting CometChat auto-login for user:', user.id);
+          console.log('🚀 User role from store:', user.role);
           
           // First, try to create the user in CometChat (if they don't exist)
           const createResponse = await fetch('/api/cometchat/user', {
@@ -111,6 +113,8 @@ export default function DashboardPage() {
               role: user.role || 'user', // Pass role for filtering
             }),
           });
+          
+          console.log('🚀 CometChat user creation response status:', createResponse.status);
 
           if (!createResponse.ok) {
             const errorData = await createResponse.json();
@@ -120,9 +124,19 @@ export default function DashboardPage() {
 
           const createData = await createResponse.json();
           console.log('✅ CometChat user created/verified:', createData);
+          console.log('📋 API Response Full Data:', JSON.stringify(createData, null, 2));
+          
+          // Check if metadata was actually set
+          if (createData.data?.metadata) {
+            console.log('✅ Metadata in API response:', createData.data.metadata);
+          } else {
+            console.warn('⚠️ NO METADATA in API response!');
+          }
 
-          // Wait a bit for user to be created
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // If user already existed, we need to wait longer for metadata to propagate
+          const waitTime = createData.message?.includes('already exists') ? 2000 : 500;
+          console.log(`⏳ Waiting ${waitTime}ms for CometChat sync...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
 
           // Login to CometChat using UID directly (no need for separate auth token)
           console.log('🔑 Logging in to CometChat with UID:', user.id);
@@ -158,20 +172,52 @@ export default function DashboardPage() {
         try {
           setLoadingChatUsers(true);
           const { CometChat } = await import('@cometchat/chat-sdk-javascript');
+          
+          console.log('[USER] 🔍 Fetching users from CometChat (attempt:', forceRefreshKey, ')');
+          
+          // If this is the first fetch (forceRefreshKey === 0), wait longer for metadata to propagate
+          if (forceRefreshKey === 0) {
+            console.log('[USER] ⏳ First load - waiting 3 seconds for metadata propagation...');
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
+          
+          // First, fetch user list
           const usersRequest = new CometChat.UsersRequestBuilder()
             .setLimit(30)
             .build();
           const usersList = await usersRequest.fetchNext();
           
+          // Force refresh each user's metadata from server
+          console.log('[USER] 📡 Fetching fresh metadata for each user...');
+          const usersWithFreshMetadata = await Promise.all(
+            usersList.map(async (u: any) => {
+              try {
+                console.log(`[USER] 🔍 Fetching fresh data for: ${u.getName()} (${u.getUid()})`);
+                // Fetch the user again to get fresh metadata from server
+                const freshUser = await CometChat.getUser(u.getUid());
+                console.log(`[USER] 📦 Fresh user data:`, {
+                  name: freshUser.getName(),
+                  uid: freshUser.getUid(),
+                  metadata: freshUser.getMetadata(),
+                  rawMetadata: JSON.stringify(freshUser.getMetadata())
+                });
+                return freshUser;
+              } catch (error) {
+                console.warn(`[USER] Could not refresh metadata for ${u.getName()}:`, error);
+                return u;
+              }
+            })
+          );
+          
           // Debug: Log all users with their metadata
-          console.log('[USER] Total CometChat users fetched:', usersList.length);
-          usersList.forEach((u: any) => {
+          console.log('[USER] Total CometChat users fetched:', usersWithFreshMetadata.length);
+          usersWithFreshMetadata.forEach((u: any) => {
             const metadata = u.getMetadata();
             console.log(`[USER] User: ${u.getName()} (${u.getUid()}) - Role: ${metadata?.role || 'NO METADATA'}`);
           });
           
           // Filter to show ONLY admin users (therapists) - regular users should only chat with admin
-          const filteredUsers = usersList.filter((u: any) => {
+          const filteredUsers = usersWithFreshMetadata.filter((u: any) => {
             const metadata = u.getMetadata();
             const userRole = metadata?.role || 'user';
             const shouldShow = u.getUid() !== user?.id && userRole === 'admin';
@@ -205,7 +251,7 @@ export default function DashboardPage() {
       };
       fetchChatUsers();
     }
-  }, [activeView, isCometChatLoggedIn, user]);
+  }, [activeView, isCometChatLoggedIn, user, forceRefreshKey]);
 
   // Listen for incoming messages and read receipts (customer side)
   useEffect(() => {
@@ -388,8 +434,22 @@ export default function DashboardPage() {
         return (
           <div>
             <div className="mb-4 md:mb-6">
-              <h1 className="text-2xl md:text-3xl font-bold text-text mb-2">💬 Chat with Your Therapist</h1>
-              <p className="text-text/70 text-sm md:text-base">Connect with your therapist anytime</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-text mb-2">💬 Chat with Your Therapist</h1>
+                  <p className="text-text/70 text-sm md:text-base">Connect with your therapist anytime</p>
+                </div>
+                <button
+                  onClick={() => {
+                    console.log('[USER] 🔄 Manual refresh triggered');
+                    setForceRefreshKey(prev => prev + 1);
+                  }}
+                  disabled={loadingChatUsers}
+                  className="px-3 md:px-4 py-2 bg-primary text-white rounded-lg text-xs md:text-sm hover:bg-primary-hover disabled:opacity-50"
+                >
+                  {loadingChatUsers ? '⏳ Loading...' : '🔄 Refresh'}
+                </button>
+              </div>
             </div>
             
             <div className="h-[500px] md:h-[600px] bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col md:flex-row">
@@ -425,8 +485,17 @@ export default function DashboardPage() {
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                         </div>
                       ) : chatUsers.length === 0 ? (
-                        <div className="p-4 text-center text-gray-500">
-                          <p>No therapists available</p>
+                        <div className="p-4 text-center text-gray-500 space-y-3">
+                          <p className="font-semibold">No therapists available</p>
+                          <p className="text-xs">
+                            If you expect to see therapists here, please contact support or wait for the admin to log in.
+                          </p>
+                          <button
+                            onClick={() => window.location.reload()}
+                            className="mt-2 px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary-hover"
+                          >
+                            Refresh Page
+                          </button>
                         </div>
                       ) : (
                         chatUsers.map((u) => {

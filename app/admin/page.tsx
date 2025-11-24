@@ -37,6 +37,7 @@ export default function AdminPage() {
   const [loadingChatUsers, setLoadingChatUsers] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState<{ [key: string]: number }>({});
   const [showMobileUserList, setShowMobileUserList] = useState(true);
+  const [forceRefreshKey, setForceRefreshKey] = useState(0);
   const [CometChatComponents, setCometChatComponents] = useState<{
     MessageList: React.ComponentType<any> | null;
     MessageComposer: React.ComponentType<any> | null;
@@ -201,6 +202,7 @@ export default function AdminPage() {
       if (isLoggedIn && user && user.role === 'admin' && isInitialized && !isCometChatLoggedIn) {
         try {
           console.log('🚀 [ADMIN] Starting CometChat auto-login for admin:', user.id);
+          console.log('🚀 [ADMIN] User role from store:', user.role);
           
           // Create admin user in CometChat (if they don't exist)
           const createResponse = await fetch('/api/cometchat/user', {
@@ -210,9 +212,11 @@ export default function AdminPage() {
               uid: user.id,
               name: user.name,
               avatar: '',
-              role: user.role || 'admin', // Pass role for filtering
+              role: 'admin', // ALWAYS 'admin' for admin users
             }),
           });
+          
+          console.log('🚀 [ADMIN] CometChat user creation response status:', createResponse.status);
 
           if (!createResponse.ok) {
             const errorData = await createResponse.json();
@@ -273,20 +277,44 @@ export default function AdminPage() {
         try {
           setLoadingChatUsers(true);
           const { CometChat } = await import('@cometchat/chat-sdk-javascript');
+          
+          console.log('[ADMIN] 🔍 Fetching users from CometChat (attempt:', forceRefreshKey, ')');
+          
+          // If this is the first fetch (forceRefreshKey === 0), wait longer for metadata to propagate
+          if (forceRefreshKey === 0) {
+            console.log('[ADMIN] ⏳ First load - waiting 3 seconds for metadata propagation...');
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
+          
           const usersRequest = new CometChat.UsersRequestBuilder()
             .setLimit(30)
             .build();
           const usersList = await usersRequest.fetchNext();
           
+          // Force refresh each user's metadata from server
+          console.log('[ADMIN] 📡 Fetching fresh metadata for each user...');
+          const usersWithFreshMetadata = await Promise.all(
+            usersList.map(async (u: any) => {
+              try {
+                // Fetch the user again to get fresh metadata from server
+                const freshUser = await CometChat.getUser(u.getUid());
+                return freshUser;
+              } catch (error) {
+                console.warn(`[ADMIN] Could not refresh metadata for ${u.getName()}:`, error);
+                return u;
+              }
+            })
+          );
+          
           // Debug: Log all users with their metadata
-          console.log('[ADMIN] Total CometChat users fetched:', usersList.length);
-          usersList.forEach((u: any) => {
+          console.log('[ADMIN] Total CometChat users fetched:', usersWithFreshMetadata.length);
+          usersWithFreshMetadata.forEach((u: any) => {
             const metadata = u.getMetadata();
             console.log(`[ADMIN] User: ${u.getName()} (${u.getUid()}) - Role: ${metadata?.role || 'NO METADATA'}`);
           });
           
           // Filter to show ONLY regular users (patients) - admin should only see non-admin users
-          const filteredUsers = usersList.filter((u: any) => {
+          const filteredUsers = usersWithFreshMetadata.filter((u: any) => {
             const metadata = u.getMetadata();
             const userRole = metadata?.role || 'user';
             const shouldShow = u.getUid() !== user?.id && userRole !== 'admin';
@@ -322,7 +350,7 @@ export default function AdminPage() {
       };
       fetchChatUsers();
     }
-  }, [activeTab, isCometChatLoggedIn, user]);
+  }, [activeTab, isCometChatLoggedIn, user, forceRefreshKey]);
 
   // Listen for incoming messages and update unread counts
   useEffect(() => {
@@ -994,8 +1022,22 @@ export default function AdminPage() {
           {activeTab === "chat" && (
             <div>
               <div className="mb-4 md:mb-6">
-                <h2 className="text-xl md:text-2xl font-bold text-text mb-2">💬 Chat with Patients</h2>
-                <p className="text-text/70 text-sm md:text-base">Connect with patients who have contacted you</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-bold text-text mb-2">💬 Chat with Patients</h2>
+                    <p className="text-text/70 text-sm md:text-base">Connect with patients who have contacted you</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      console.log('[ADMIN] 🔄 Manual refresh triggered');
+                      setForceRefreshKey(prev => prev + 1);
+                    }}
+                    disabled={loadingChatUsers}
+                    className="px-3 md:px-4 py-2 bg-primary text-white rounded-lg text-xs md:text-sm hover:bg-primary-hover disabled:opacity-50"
+                  >
+                    {loadingChatUsers ? '⏳ Loading...' : '🔄 Refresh'}
+                  </button>
+                </div>
               </div>
               
               <div className="h-[500px] md:h-[600px] bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col md:flex-row">

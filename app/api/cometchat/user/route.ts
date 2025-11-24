@@ -25,7 +25,9 @@ export async function POST(req: NextRequest) {
     const region = process.env.NEXT_PUBLIC_COMETCHAT_REGION || "us";
     const apiKey = process.env.COMETCHAT_API_KEY || process.env.NEXT_PUBLIC_COMETCHAT_AUTH_KEY || "a9872929281e6788d558b02a78db2dc306e02786";
 
-    console.log(`🔵 Creating CometChat user: ${sanitizedUid} (${name}) with role: ${role || 'user'}`);
+    console.log(`🔵 Creating CometChat user: ${sanitizedUid} (${name})`);
+    console.log(`🔵 Role received:`, role);
+    console.log(`🔵 Role to be set:`, role || 'user');
 
     // Create user via CometChat REST API with role metadata
     const response = await fetch(
@@ -53,19 +55,24 @@ export async function POST(req: NextRequest) {
     if (!response.ok) {
       // If user already exists, update their metadata with the role
       if (data?.error?.code === "ERR_UID_ALREADY_EXISTS") {
-        console.log(`🔄 CometChat user already exists: ${sanitizedUid}, updating metadata...`);
+        console.log(`🔄 CometChat user already exists: ${sanitizedUid}`);
+        console.log(`🔄 Updating metadata with role: ${role || 'user'}`);
         
-        // Update user metadata via PATCH request
+        // Update user metadata via PUT request (PATCH might not work)
+        // Note: We use PUT to replace the entire user object with metadata
         const updateResponse = await fetch(
           `https://api-${region}.cometchat.io/v3/users/${sanitizedUid}`,
           {
-            method: "PATCH",
+            method: "PUT",
             headers: {
               "Content-Type": "application/json",
               "appId": appId,
               "apiKey": apiKey,
             },
             body: JSON.stringify({
+              uid: sanitizedUid,
+              name,
+              ...(avatar && { avatar }),
               metadata: {
                 role: role || 'user',
               },
@@ -76,15 +83,20 @@ export async function POST(req: NextRequest) {
         if (updateResponse.ok) {
           const updatedData = await updateResponse.json();
           console.log(`✅ CometChat user metadata updated successfully: ${sanitizedUid} with role: ${role || 'user'}`);
+          console.log(`📦 CometChat PATCH response:`, JSON.stringify(updatedData, null, 2));
+          console.log(`📦 Metadata in response:`, updatedData.data?.metadata);
           return NextResponse.json({ 
             message: "User exists and metadata updated",
             data: updatedData.data || { uid: sanitizedUid, name, avatar, metadata: { role: role || 'user' } },
           });
         } else {
-          console.warn(`⚠️ Failed to update metadata for ${sanitizedUid}, but user exists`);
+          const errorData = await updateResponse.json();
+          console.error(`❌ Failed to update metadata for ${sanitizedUid}`);
+          console.error(`❌ Error response:`, JSON.stringify(errorData, null, 2));
           return NextResponse.json({
-            message: "User already exists",
+            message: "User already exists but metadata update failed",
             data: { uid: sanitizedUid, name, avatar },
+            error: errorData
           });
         }
       }
@@ -100,6 +112,8 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(`✅ CometChat user created successfully: ${sanitizedUid} with role: ${role || 'user'}`);
+    console.log(`📦 CometChat CREATE response:`, JSON.stringify(data, null, 2));
+    console.log(`📦 Metadata in response:`, data.data?.metadata);
     return NextResponse.json({ ...data, data: { ...data.data, uid: sanitizedUid } });
   } catch (error: any) {
     console.error("CometChat user creation error:", error);
