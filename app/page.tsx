@@ -34,10 +34,10 @@ export default function Home() {
           <div className="max-w-4xl mx-auto text-center mb-8">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
               Convenient and affordable therapy with{" "}
-              <span className="text-accent-green">TherapyPlatform</span>
+              <span className="text-accent-green">Journey to Healing</span>
             </h1>
             <p className="text-lg md:text-xl text-white/90 leading-relaxed max-w-3xl mx-auto">
-              TherapyPlatform will match you to one of our licensed therapists based upon your location, preferences, and therapist availability.
+              Journey to Healing will match you to one of our licensed therapists based upon your location, preferences, and therapist availability.
             </p>
           </div>
 
@@ -129,7 +129,7 @@ export default function Home() {
                 <h2 className="text-4xl md:text-5xl font-bold text-text mb-6 leading-tight">
                   Join over <span className="text-primary">6,000,000</span> people worldwide who decided to{" "}
                   <span className="text-primary">get help</span> and{" "}
-                  <span className="text-primary">get happy</span> with TherapyPlatform
+                  <span className="text-primary">get happy</span> with Journey to Healing
                 </h2>
                 <button
                   onClick={() => router.push("/login?signup=true")}

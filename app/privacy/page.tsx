@@ -65,7 +65,7 @@ export default function PrivacyPage() {
               <h2 className="text-2xl font-bold text-text mb-4">Contact Us</h2>
               <p>
                 If you have questions about this privacy notice or wish to exercise your rights,
-                please contact us at privacy@therapyplatform.com
+                please contact us at privacy@journeytohealing.com
               </p>
             </section>
 

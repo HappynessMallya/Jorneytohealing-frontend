@@ -14,10 +14,10 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center space-x-2 group">
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">T</span>
+              <span className="text-white font-bold text-lg">J</span>
             </div>
             <span className="text-xl font-semibold text-primary group-hover:text-primary-hover transition-colors">
-              TherapyPlatform
+              Journey to Healing
             </span>
           </Link>
           <div className="hidden md:flex gap-6 items-center">
