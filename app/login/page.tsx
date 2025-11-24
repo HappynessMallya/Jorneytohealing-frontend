@@ -14,7 +14,7 @@ import SuccessModal from "@/components/SuccessModal";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuthStore();
+  const { login, isLoggedIn, user, _hasHydrated } = useAuthStore();
   const [isLogin, setIsLogin] = useState(true);
 
   useEffect(() => {
@@ -24,6 +24,20 @@ function LoginForm() {
       setIsLogin(false);
     }
   }, [searchParams]);
+
+  // Redirect already logged-in users
+  useEffect(() => {
+    if (!_hasHydrated) return; // Wait for hydration
+    
+    if (isLoggedIn && user) {
+      // Redirect based on role
+      if (user.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
+    }
+  }, [_hasHydrated, isLoggedIn, user, router]);
   const [formData, setFormData] = useState({
     email: "",
     password: "",

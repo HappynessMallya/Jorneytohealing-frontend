@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 
 export default function ChatPage() {
   const router = useRouter();
-  const { isLoggedIn } = useAuthStore();
+  const { isLoggedIn, _hasHydrated } = useAuthStore();
   const { chatClient, setChatClient, isConnected } = useChatStore();
   const [hasAccess, setHasAccess] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -18,13 +18,18 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState("");
 
   useEffect(() => {
+    // Wait for hydration
+    if (!_hasHydrated) {
+      return;
+    }
+
     if (!isLoggedIn) {
       router.push("/login");
       return;
     }
 
     checkAccess();
-  }, [isLoggedIn, router]);
+  }, [_hasHydrated, isLoggedIn, router]);
 
   const checkAccess = async () => {
     try {

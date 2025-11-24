@@ -11,7 +11,7 @@ import LoginModal from "@/components/LoginModal";
 
 export default function QuestionnairePage() {
   const router = useRouter();
-  const { isLoggedIn, user } = useAuthStore();
+  const { isLoggedIn, user, _hasHydrated } = useAuthStore();
   const { answers, currentStep, setAnswer, setStep, pendingSubmission, setPendingSubmission, setAnswers } = useQuestionnaireStore();
   const [loading, setLoading] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);

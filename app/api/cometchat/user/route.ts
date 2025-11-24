@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function POST(req: NextRequest) {
   try {
-    const { uid, name, avatar } = await req.json();
+    const { uid, name, avatar, role } = await req.json();
 
     if (!uid || !name) {
       return NextResponse.json(
@@ -25,9 +25,9 @@ export async function POST(req: NextRequest) {
     const region = process.env.NEXT_PUBLIC_COMETCHAT_REGION || "us";
     const apiKey = process.env.COMETCHAT_API_KEY || process.env.NEXT_PUBLIC_COMETCHAT_AUTH_KEY || "a9872929281e6788d558b02a78db2dc306e02786";
 
-    console.log(`🔵 Creating CometChat user: ${sanitizedUid} (${name})`);
+    console.log(`🔵 Creating CometChat user: ${sanitizedUid} (${name}) with role: ${role || 'user'}`);
 
-    // Create user via CometChat REST API
+    // Create user via CometChat REST API with role metadata
     const response = await fetch(
       `https://api-${region}.cometchat.io/v3/users`,
       {
@@ -41,6 +41,9 @@ export async function POST(req: NextRequest) {
           uid: sanitizedUid,
           name,
           ...(avatar && { avatar }),
+          metadata: {
+            role: role || 'user', // Store role in metadata for filtering
+          },
         }),
       }
     );

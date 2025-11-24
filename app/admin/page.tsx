@@ -15,7 +15,7 @@ import BookingDetailsModal from "@/components/BookingDetailsModal";
 
 export default function AdminPage() {
   const router = useRouter();
-  const { isLoggedIn, user } = useAuthStore();
+  const { isLoggedIn, user, _hasHydrated } = useAuthStore();
   const { isInitialized, isLoggedIn: isCometChatLoggedIn, loginToChat } = useCometChat();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [stats, setStats] = useState<any>(null);
@@ -45,12 +45,17 @@ export default function AdminPage() {
   });
 
   useEffect(() => {
+    // Wait for Zustand to hydrate before checking auth
+    if (!_hasHydrated) {
+      return;
+    }
+
     // Check authentication status
     if (checkingAuth) {
       if (!isLoggedIn) {
-      router.push("/login");
-      return;
-    }
+        router.push("/login");
+        return;
+      }
       if (user?.role !== "admin") {
         router.push("/dashboard");
         return;
@@ -59,7 +64,7 @@ export default function AdminPage() {
     }
 
     if (isLoggedIn && user?.role === "admin" && !checkingAuth) {
-    fetchDashboardStats();
+      fetchDashboardStats();
       // Load initial data for tabs
       fetchClients();
       fetchBookings();
@@ -68,7 +73,7 @@ export default function AdminPage() {
       fetchPublishedPostsCount();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn, user, router, checkingAuth]);
+  }, [_hasHydrated, isLoggedIn, user, router, checkingAuth]);
 
   const fetchDashboardStats = async () => {
     try {
@@ -86,8 +91,7 @@ export default function AdminPage() {
   const fetchClients = async () => {
     try {
       const clients = await adminApi.getClients();
-      // Ensure clients is always an array
-      setClients(Array.isArray(clients) ? clients : []);
+      setClients(clients);
     } catch (error) {
       console.error("Error fetching clients:", error);
       // Keep empty array if API fails
@@ -99,18 +103,12 @@ export default function AdminPage() {
     try {
       // GET /posts - gets all posts (both published and unpublished)
       const posts = await postsApi.getAll();
-      // Ensure posts is always an array
-      const postsArray = Array.isArray(posts) ? posts : [];
-      setPosts(postsArray);
+      setPosts(posts);
       // Update Zustand store
       const { setPosts: setPostsInStore } = usePostsStore.getState();
-      setPostsInStore(postsArray);
+      setPostsInStore(posts);
     } catch (error) {
       console.error("Error fetching posts:", error);
-      // Reset to empty array on error
-      setPosts([]);
-      const { setPosts: setPostsInStore } = usePostsStore.getState();
-      setPostsInStore([]);
     }
   };
 
@@ -118,16 +116,12 @@ export default function AdminPage() {
     try {
       // GET /posts?published=true - gets only published posts
       const publishedPosts = await postsApi.getAll(true);
-      // Ensure publishedPosts is always an array
-      const postsArray = Array.isArray(publishedPosts) ? publishedPosts : [];
-      setPublishedPostsCount(postsArray.length);
+      setPublishedPostsCount(publishedPosts.length);
     } catch (error) {
       console.error("Error fetching published posts count:", error);
       // Fallback to counting from all posts if available
-      if (Array.isArray(posts) && posts.length > 0) {
+      if (posts.length > 0) {
         setPublishedPostsCount(posts.filter(p => p.published).length);
-      } else {
-        setPublishedPostsCount(0);
       }
     }
   };
@@ -136,8 +130,7 @@ export default function AdminPage() {
     setBookingsLoading(true);
     try {
       const bookings = await adminApi.getAllBookings();
-      // Ensure bookings is always an array
-      setBookings(Array.isArray(bookings) ? bookings : []);
+      setBookings(bookings);
     } catch (error) {
       console.error("Error fetching bookings:", error);
       // Keep empty array if API fails
@@ -151,8 +144,7 @@ export default function AdminPage() {
     setUpcomingBookingsLoading(true);
     try {
       const upcoming = await adminApi.getUpcomingBookings();
-      // Ensure upcoming is always an array
-      setUpcomingBookings(Array.isArray(upcoming) ? upcoming : []);
+      setUpcomingBookings(upcoming);
     } catch (error) {
       console.error("Error fetching upcoming bookings:", error);
       setUpcomingBookings([]);
@@ -182,8 +174,7 @@ export default function AdminPage() {
   const fetchPayments = async () => {
     try {
       const payments = await adminApi.getAllPayments();
-      // Ensure payments is always an array
-      setPayments(Array.isArray(payments) ? payments : []);
+      setPayments(payments);
     } catch (error) {
       console.error("Error fetching payments:", error);
       // Keep empty array if API fails
@@ -194,8 +185,7 @@ export default function AdminPage() {
   const fetchQuestionnaires = async () => {
     try {
       const questionnaires = await adminApi.getAllQuestionnaires();
-      // Ensure questionnaires is always an array
-      setQuestionnaires(Array.isArray(questionnaires) ? questionnaires : []);
+      setQuestionnaires(questionnaires);
     } catch (error) {
       console.error("Error fetching questionnaires:", error);
       setQuestionnaires([]);
@@ -219,6 +209,7 @@ export default function AdminPage() {
               uid: user.id,
               name: user.name,
               avatar: '',
+              role: user.role || 'admin', // Pass role for filtering
             }),
           });
 
@@ -285,9 +276,13 @@ export default function AdminPage() {
             .setLimit(30)
             .build();
           const usersList = await usersRequest.fetchNext();
-          // Filter out current admin user
-          const filteredUsers = usersList.filter((u: any) => u.getUid() !== user?.id);
-          console.log('[ADMIN] Fetched chat users:', filteredUsers.length);
+          // Filter to show ONLY regular users (patients) - admin should only see non-admin users
+          const filteredUsers = usersList.filter((u: any) => {
+            const metadata = u.getMetadata();
+            const userRole = metadata?.role || 'user';
+            return u.getUid() !== user?.id && userRole !== 'admin';
+          });
+          console.log('[ADMIN] Filtered patients (non-admin users):', filteredUsers.length);
           setChatUsers(filteredUsers);
 
           // Fetch unread message counts for each user
@@ -472,13 +467,15 @@ export default function AdminPage() {
     }
   }, [selectedChatUser, isCometChatLoggedIn]);
 
-  // Show loading while checking authentication
-  if (checkingAuth || !isLoggedIn || user?.role !== "admin") {
+  // Show loading while hydrating or checking authentication
+  if (!_hasHydrated || checkingAuth || !isLoggedIn || user?.role !== "admin") {
     return (
       <main className="min-h-screen bg-gradient-to-b from-secondary to-accent flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-text/70">Loading admin dashboard...</p>
+          <p className="text-text/70">
+            {!_hasHydrated ? 'Loading...' : 'Loading admin dashboard...'}
+          </p>
         </div>
       </main>
     );

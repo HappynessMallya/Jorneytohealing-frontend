@@ -13,6 +13,8 @@ interface AuthStore {
   user: User | null;
   token: string | null;
   isLoggedIn: boolean;
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
   login: (user: User, token: string) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: User) => void;
@@ -25,6 +27,8 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       token: null,
       isLoggedIn: false,
+      _hasHydrated: false,
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
       login: async (user, token) => {
         if (typeof window !== "undefined") {
           localStorage.setItem("token", token);
@@ -54,6 +58,9 @@ export const useAuthStore = create<AuthStore>()(
     {
       name: "auth-storage",
       storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

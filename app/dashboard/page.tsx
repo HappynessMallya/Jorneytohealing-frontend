@@ -14,7 +14,7 @@ import BookingDetailsModal from "@/components/BookingDetailsModal";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { isLoggedIn, user } = useAuthStore();
+  const { isLoggedIn, user, _hasHydrated } = useAuthStore();
   const { isInitialized, isLoggedIn: isCometChatLoggedIn, loginToChat } = useCometChat();
   const [bookings, setBookings] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
@@ -42,20 +42,21 @@ export default function DashboardPage() {
         bookingsApi.getMyBookings(),
         paymentsApi.getMyPayments(),
       ]);
-      // Ensure data is always an array
-      setBookings(Array.isArray(bookingsData) ? bookingsData : []);
-      setPayments(Array.isArray(paymentsData) ? paymentsData : []);
+      setBookings(bookingsData);
+      setPayments(paymentsData);
     } catch (error) {
       console.error("Error fetching data:", error);
-      // Reset to empty arrays on error
-      setBookings([]);
-      setPayments([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    // Wait for Zustand to hydrate before checking auth
+    if (!_hasHydrated) {
+      return;
+    }
+
     if (!isLoggedIn) {
       router.push("/login");
       return;
@@ -68,7 +69,7 @@ export default function DashboardPage() {
     }
 
     fetchData();
-  }, [isLoggedIn, user, router, fetchData]);
+  }, [_hasHydrated, isLoggedIn, user, router, fetchData]);
 
   // Fetch questionnaire when switching to questionnaire view
   const fetchQuestionnaire = useCallback(async () => {
@@ -106,12 +107,13 @@ export default function DashboardPage() {
               uid: user.id,
               name: user.name,
               avatar: '',
+              role: user.role || 'user', // Pass role for filtering
             }),
           });
 
           if (!createResponse.ok) {
             const errorData = await createResponse.json();
-            console.error('❌ Failed to create CometChat user:', errorData);
+            console.error('❌Failed to create CometChat user:', errorData);
             throw new Error(errorData.message || 'Failed to create user');
           }
 
@@ -159,8 +161,13 @@ export default function DashboardPage() {
             .setLimit(30)
             .build();
           const usersList = await usersRequest.fetchNext();
-          // Filter out current user and show only therapists/admins
-          const filteredUsers = usersList.filter((u: any) => u.getUid() !== user?.id);
+          // Filter to show ONLY admin users (therapists) - regular users should only chat with admin
+          const filteredUsers = usersList.filter((u: any) => {
+            const metadata = u.getMetadata();
+            const userRole = metadata?.role || 'user';
+            return u.getUid() !== user?.id && userRole === 'admin';
+          });
+          console.log('[USER] Filtered therapists (admin only):', filteredUsers.length);
           setChatUsers(filteredUsers);
 
           // Fetch unread message counts
@@ -347,6 +354,18 @@ export default function DashboardPage() {
       fetchQuestionnaire();
     }
   }, [activeView, fetchData, fetchQuestionnaire]);
+
+  // Show loading while hydrating
+  if (!_hasHydrated) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-secondary to-accent flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-text/70">Loading...</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!isLoggedIn) {
     return null;
