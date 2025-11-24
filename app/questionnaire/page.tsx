@@ -499,14 +499,30 @@ export default function QuestionnairePage() {
             </div>
           )}
 
-          {/* Info Box */}
-          <div className="bg-primary-lighter rounded-2xl p-5 mb-8 mt-8 flex items-start gap-4">
-            <div className="w-6 h-6 rounded-full border-2 border-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-primary text-sm font-bold">i</span>
+          {/* Info Box with Wave Separator */}
+          <div className="relative mt-8 mb-8">
+            {/* Wave design separator */}
+            <div className="absolute -top-12 left-0 right-0 h-16 overflow-hidden pointer-events-none">
+              <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-full">
+                <path 
+                  d="M0,0 C150,80 350,80 600,50 C850,20 1050,60 1200,40 L1200,120 L0,120 Z" 
+                  className="fill-primary/5"
+                />
+                <path 
+                  d="M0,20 C200,100 400,100 600,70 C800,40 1000,80 1200,60 L1200,120 L0,120 Z" 
+                  className="fill-primary/10"
+                />
+              </svg>
             </div>
-            <p className="text-text-light text-sm leading-relaxed">
-              Let&apos;s walk through the process of finding the best therapist for you! We&apos;ll start off with some basic questions.
-            </p>
+            
+            <div className="bg-gradient-to-br from-primary-lighter to-accent-green/20 rounded-2xl p-5 flex items-start gap-4 relative z-10 border border-primary/10">
+              <div className="w-8 h-8 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-primary text-sm font-bold">i</span>
+              </div>
+              <p className="text-text text-sm leading-relaxed">
+                Let&apos;s walk through the process of finding the best therapist for you! We&apos;ll start off with some basic questions.
+              </p>
+            </div>
           </div>
 
           {/* Navigation Buttons */}
